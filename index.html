@@ -13,11 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* High-res image rendering tweak */
-        .high-res-img {
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
-        }
     </style>
 </head>
 <body class="bg-[#09090b] text-zinc-100 m-0 p-0 select-none overflow-hidden antialiased">
@@ -39,6 +34,32 @@
         );
         const PowerIcon = () => (
             <svg class="w-4 h-4 text-zinc-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77 0"/></svg>
+        );
+
+        // Perfectly scalable vector match for the Orion Hunter silhouette lines
+        const OrionLogoIcon = () => (
+            <svg class="w-6 h-6 text-zinc-300 group-hover:text-cyan-400 transition-colors drop-shadow-[0_0_6px_rgba(34,211,238,0.3)]" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                {/* Constellation Star-to-Star Skeleton lines */}
+                <path d="M45 32 L55 33 L53 55 L47 55 Z" stroke-width="1.5" opacity="0.6" /> {/* Torso */}
+                <path d="M45 32 L36 63" stroke-width="1.5" opacity="0.6" /> {/* Left Leg */}
+                <path d="M55 33 L60 62" stroke-width="1.5" opacity="0.6" /> {/* Right Leg */}
+                
+                {/* Outer Hunter Silhouette Geometry (Club and Bow nodes) */}
+                <path d="M45 32 L32 20 L40 12" stroke-width="2" /> {/* Club Arm */}
+                <path d="M55 33 L68 31 L64 26 M68 31 L64 36" stroke-width="2" /> {/* Bow Arm */}
+                <path d="M68 14 C78 25, 78 37, 68 48" stroke-width="2" /> {/* Bow Curve */}
+                
+                {/* Belt Stars Nodes */}
+                <circle cx="47.5" cy="45" r="2.5" fill="currentColor" class="animate-pulse" />
+                <circle cx="50" cy="45" r="2.5" fill="currentColor" class="animate-pulse" />
+                <circle cx="52.5" cy="45" r="2.5" fill="currentColor" class="animate-pulse" />
+
+                {/* Major Star Cluster Nodes */}
+                <circle cx="45" cy="32" r="3.5" fill="#38bdf8" /> {/* Betelgeuse */}
+                <circle cx="55" cy="33" r="3" fill="currentColor" />    {/* Bellatrix */}
+                <circle cx="36" cy="63" r="3.5" fill="#38bdf8" /> {/* Rigel */}
+                <circle cx="60" cy="62" r="3" fill="currentColor" />    {/* Saiph */}
+            </svg>
         );
 
         // Helper component for Draggable items
@@ -144,10 +165,10 @@
                         </div>
                     </header>
 
-                    {/* DESKTOP WORKSPACE GRID */}
+                    {/* DESKTOP WORKSPACE */}
                     <main class="relative w-full h-full z-10" onClick={() => setIsStartOpen(false)}>
                         
-                        {/* DRAGGABLE DESKTOP SHORTCUT ICONS */}
+                        {/* DRAGGABLE SHORTCUT ICONS */}
                         {apps.map((app) => {
                             const AppIcon = app.icon;
                             const isOpen = activeWindow === app.id;
@@ -186,40 +207,36 @@
                                         ${isMaximized ? 'fixed inset-x-6 top-14 bottom-28' : ''}`}
                                     onClick={(e) => e.stopPropagation()}
                                 >
-                                    {/* Window Header Title Bar (macOS Style layout) */}
+                                    {/* Window Header Title Bar (macOS Layout style) */}
                                     <div class="window-drag-bar h-12 bg-zinc-900/40 border-b border-zinc-800/30 flex items-center px-5 cursor-grab active:cursor-grabbing select-none relative">
                                         
-                                        {/* macOS Traffic Light Buttons Left-Aligned */}
+                                        {/* macOS Style Traffic Lights */}
                                         <div class="flex items-center gap-2 group/lights z-10">
-                                            {/* Close Button (Red) */}
                                             <button onClick={() => setActiveWindow(null)} class="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e] flex items-center justify-center cursor-pointer relative">
                                                 <span class="text-[9px] font-bold text-[#4c0002] opacity-0 group-hover/lights:opacity-100 transition-opacity absolute pb-0.5">✕</span>
                                             </button>
-                                            {/* Minimize/Disabled Placeholder (Yellow) */}
                                             <button class="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123] flex items-center justify-center cursor-default relative">
                                                 <span class="text-[11px] font-bold text-[#5c3e00] opacity-0 group-hover/lights:opacity-100 transition-opacity absolute pb-1.5">_</span>
                                             </button>
-                                            {/* Maximize Button (Green) */}
                                             <button onClick={() => setIsMaximized(!isMaximized)} class="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aaa2c] flex items-center justify-center cursor-pointer relative">
                                                 <span class="text-[7px] font-bold text-[#004d05] opacity-0 group-hover/lights:opacity-100 transition-opacity absolute pb-0.5">{isMaximized ? '⌥' : '⤢'}</span>
                                             </button>
                                         </div>
 
-                                        {/* Center-Aligned Title Text */}
+                                        {/* Core Center Title String */}
                                         <div class="absolute inset-x-0 text-center pointer-events-none">
                                             <span class="text-xs font-semibold tracking-wide text-zinc-400 capitalize">{activeWindow}</span>
                                         </div>
                                     </div>
 
-                                    {/* Window Body Viewport */}
+                                    {/* Window Contents */}
                                     <div class="flex-1 p-6 overflow-y-auto cursor-default">
                                         {activeWindow === 'dashboard' ? (
                                             <div class="space-y-6 max-w-4xl">
                                                 <div>
                                                     <h2 class="text-lg font-bold tracking-tight text-white">System Environment</h2>
-                                                    <p class="text-xs text-zinc-400 mt-1">Operational view of active configurations and container paths inside orionOS.</p>
+                                                    <p class="text-xs text-zinc-400 mt-1">Operational view of active configurations inside orionOS.</p>
                                                 </div>
-
                                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                                                     <div class="p-4 rounded-lg bg-zinc-900/40 border border-zinc-800/50">
                                                         <div class="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">Memory Array</div>
@@ -247,7 +264,7 @@
                         )}
                     </main>
 
-                    {/* START MENU DIALOG CONTAINER */}
+                    {/* START MENU POPUP PANEL */}
                     {isStartOpen && (
                         <div 
                             class="absolute bottom-22 left-1/2 -translate-x-1/2 md:left-8 md:translate-x-0 w-72 bg-zinc-950/95 border border-zinc-800/80 backdrop-blur-2xl rounded-2xl shadow-2xl z-50 p-4 flex flex-col overflow-hidden"
@@ -285,34 +302,26 @@
                         </div>
                     )}
 
-                    {/* BOTTOM DESKTOP TASK DOCK (ENLARGED & STATIC / UNMOVABLE) */}
+                    {/* BOTTOM DOCK (ENLARGED & COMPLETELY UNMOVABLE) */}
                     <div class="absolute bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
                         <div class="h-16 px-5 rounded-2xl bg-zinc-950/40 border border-zinc-800/40 backdrop-blur-xl flex items-center gap-5 shadow-2xl">
                             
-                            {/* START MENU TRIGGER WITH CONTRAST CORRECTIONS */}
+                            {/* START MENU VECTOR ICON TRIGGER BUTTON */}
                             <button 
                                 onClick={(e) => { e.stopPropagation(); setIsStartOpen(!isStartOpen); }}
-                                class={`w-11 h-11 rounded-full overflow-hidden transition-all duration-150 cursor-pointer border relative group flex items-center justify-center bg-black
+                                class={`w-11 h-11 rounded-full transition-all duration-150 cursor-pointer border relative group flex items-center justify-center bg-zinc-900/30 hover:bg-zinc-900/80
                                     ${isStartOpen 
-                                        ? 'border-zinc-100 scale-105 shadow-md' 
-                                        : 'border-zinc-800 hover:border-zinc-400'
+                                        ? 'border-zinc-100 scale-105 shadow-md bg-zinc-900' 
+                                        : 'border-zinc-800/80 hover:border-zinc-500'
                                     }`}
                             >
-                                <img 
-                                    src="orion.png" 
-                                    alt="Start Menu" 
-                                    class="w-full h-full object-contain high-res-img"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.parentNode.innerHTML = `<span class="text-xs font-bold text-zinc-400">O</span>`;
-                                    }}
-                                />
+                                <OrionLogoIcon />
                                 <span class={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-zinc-400 transition-all ${isStartOpen ? 'scale-100 bg-zinc-100' : 'scale-0'}`} />
                             </button>
 
                             <span class="text-zinc-800 font-light text-base select-none">|</span>
 
-                            {/* DOCK APP ICONS */}
+                            {/* SYSTEM DOCK ICON NODES */}
                             {apps.map((app) => {
                                 const AppIcon = app.icon;
                                 const isActive = activeWindow === app.id;
@@ -338,7 +347,7 @@
                         </div>
                     </div>
 
-                    {/* FOOTER BAR */}
+                    {/* FOOTER SUBTEXT BAR */}
                     <footer class="absolute bottom-0 left-0 right-0 h-7 px-6 bg-zinc-950/10 border-t border-zinc-900/20 flex items-center justify-between text-[10px] text-zinc-500 z-40">
                         <span>Workspace: Primary</span>
                         <span>orionOS</span>
