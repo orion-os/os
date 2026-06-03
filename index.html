@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>orbit.os</title>
+    <title>orionOS Desktop</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -51,9 +51,7 @@
             </svg>
         );
 
-        // Draggable container with uniform transitions
-        function Draggable({ children, initialX, initialY, handleClass, disabled, style = {} }) {
-            const [pos, setPos] = React.useState({ x: initialX, y: initialY });
+        function Draggable({ children, pos, setPos, handleClass, disabled, style = {} }) {
             const draggingRef = React.useRef(false);
             const relRef = React.useRef({ x: 0, y: 0 });
 
@@ -88,7 +86,7 @@
                     window.removeEventListener('pointermove', onPointerMove);
                     window.removeEventListener('pointerup', onPointerUp);
                 };
-            }, [pos, disabled]);
+            }, [pos, disabled, setPos]);
 
             const dragStyle = disabled ? style : {
                 ...style,
@@ -108,9 +106,12 @@
             const [time, setTime] = React.useState('');
             const [activeWindow, setActiveWindow] = React.useState('dashboard');
             const [isMaximized, setIsMaximized] = React.useState(false);
-            const [isVisible, setIsVisible] = React.useState(true); // Tracks open/close display states
-            const [isAnimating, setIsAnimating] = React.useState(false); // Prevents rapid-click style bugs
+            const [isVisible, setIsVisible] = React.useState(true);
+            const [isAnimating, setIsAnimating] = React.useState(false);
             const [isStartOpen, setIsStartOpen] = React.useState(false);
+            
+            // Manage window coordinates globally to preserve positioning between transitions safely
+            const [windowPos, setWindowPos] = React.useState({ x: 160, y: 96 });
 
             React.useEffect(() => {
                 const updateTime = () => {
@@ -129,36 +130,53 @@
                 { id: 'analytics', label: 'Analytics', icon: AnalyticsIcon, defaultX: 32, defaultY: 380 },
             ];
 
-            // Smooth Close / Minimize transition handler
+            // Complete Termination Event Handler (X Button)
             const handleWindowClose = () => {
                 if (isAnimating) return;
                 setIsAnimating(true);
                 setIsVisible(false);
                 setTimeout(() => {
+                    setActiveWindow(null);
+                    setIsMaximized(false);
                     setIsAnimating(false);
                 }, 300);
+            };
+
+            // Minimize Handler (-) with conditional checks
+            const handleWindowMinimize = () => {
+                if (isAnimating) return;
+                
+                if (isMaximized) {
+                    // Rule 1: Make it smaller if it's maximized
+                    setIsMaximized(false);
+                } else {
+                    // Rule 2: If it isn't maximized, make the tab completely invisible
+                    setIsAnimating(true);
+                    setIsVisible(false);
+                    setTimeout(() => setIsAnimating(false), 300);
+                }
             };
 
             const handleAppClick = (appId) => {
                 if (isAnimating) return;
 
                 if (activeWindow === appId) {
-                    // Toggle visibility smoothly if clicking the already selected app
                     setIsAnimating(true);
                     setIsVisible(!isVisible);
                     setTimeout(() => setIsAnimating(false), 300);
                 } else {
-                    // If switching to a completely different app
                     setIsAnimating(true);
                     if (isVisible) {
                         setIsVisible(false);
                         setTimeout(() => {
                             setActiveWindow(appId);
+                            setIsMaximized(false);
                             setIsVisible(true);
                             setIsAnimating(false);
                         }, 200);
                     } else {
                         setActiveWindow(appId);
+                        setIsMaximized(false);
                         setIsVisible(true);
                         setTimeout(() => setIsAnimating(false), 300);
                     }
@@ -196,10 +214,10 @@
                             const AppIcon = app.icon;
                             const isOpen = activeWindow === app.id && isVisible;
                             return (
-                                <Draggable key={app.id} initialX={app.defaultX} initialY={app.defaultY}>
+                                <Draggable key={app.id} pos={{ x: app.defaultX, y: app.defaultY }} setPos={() => {}} disabled={true}>
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); handleAppClick(app.id); }}
-                                        class="group flex flex-col items-center justify-center w-20 h-20 rounded-xl border border-transparent hover:border-zinc-700/30 hover:bg-zinc-950/30 transition-all cursor-grab active:cursor-grabbing text-center"
+                                        class="group flex flex-col items-center justify-center w-20 h-20 rounded-xl border border-transparent hover:border-zinc-700/30 hover:bg-zinc-950/30 transition-all text-center"
                                     >
                                         <div class={`p-3 rounded-xl bg-zinc-950/40 border border-zinc-800/30 backdrop-blur-md shadow-md relative text-zinc-300 group-hover:text-zinc-100 pointer-events-none transition-all duration-300
                                             ${isOpen ? 'bg-zinc-900/80 border-zinc-700/60 scale-105 shadow-cyan-950/20' : ''}`}>
@@ -216,22 +234,23 @@
                             );
                         })}
 
-                        {/* WINDOW FRAME LAYER */}
+                        {/* WINDOW LAYER FRAMEWORK */}
                         {activeWindow && (
                             <div class={isVisible ? "" : "pointer-events-none"}>
                                 <Draggable 
-                                    initialX={160} 
-                                    initialY={96} 
+                                    pos={windowPos}
+                                    setPos={setWindowPos}
                                     handleClass="window-drag-bar" 
                                     disabled={isMaximized}
                                     style={
                                         isMaximized 
-                                            ? { width: 'calc(100vw - 48px)', height: 'calc(100vh - 180px)', left: '24px', top: '56px' } 
+                                            ? { width: 'padding-box', inset: '56px 24px 124px 24px', position: 'absolute' } 
                                             : { width: 'calc(100vw - 220px)', height: 'calc(100vh - 240px)', minWidth: '320px', minHeight: '240px' }
                                     }
                                 >
                                     <div 
-                                        class={`bg-zinc-950/80 border border-zinc-800/80 backdrop-blur-xl rounded-xl shadow-2xl flex flex-col overflow-hidden h-full w-full z-30 transition-all duration-300 ease-in-out origin-center
+                                        class={`bg-zinc-950/80 border border-zinc-800/80 backdrop-blur-xl rounded-xl shadow-2xl flex flex-col overflow-hidden h-full w-full z-30 ease-in-out origin-center
+                                            transition-[opacity,transform,blur,width,height,inset,left,top] duration-300
                                             ${isVisible ? 'opacity-100 scale-100 blur-none' : 'opacity-0 scale-95 blur-sm'}`}
                                         onClick={(e) => e.stopPropagation()}
                                     >
@@ -240,12 +259,12 @@
                                             
                                             {/* Window Action Lights */}
                                             <div class="flex items-center gap-2 group/lights z-10">
-                                                {/* Close Button */}
+                                                {/* Close Button (✕ closes the tab cleanly) */}
                                                 <button onClick={handleWindowClose} class="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e] flex items-center justify-center cursor-pointer relative">
                                                     <span class="text-[9px] font-bold text-[#4c0002] opacity-0 group-hover/lights:opacity-100 transition-opacity absolute pb-0.5">✕</span>
                                                 </button>
-                                                {/* Minimize Button (-) runs uniform close sequence animation */}
-                                                <button onClick={handleWindowClose} class="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123] flex items-center justify-center cursor-pointer relative">
+                                                {/* Minimize Button (- behaves conditionally) */}
+                                                <button onClick={handleWindowMinimize} class="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123] flex items-center justify-center cursor-pointer relative">
                                                     <span class="text-[11px] font-bold text-[#5c3e00] opacity-0 group-hover/lights:opacity-100 transition-opacity absolute pb-1.5">_</span>
                                                 </button>
                                                 {/* Maximize Expansion Button */}
