@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🪐 orionOS Desktop</title>
+    <title>orionOS Desktop</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -239,13 +239,12 @@
                     {/* INTERFACE RENDERING OVERLAYS FOR OPTIMIZED CONTRAST */}
                     <div class="absolute inset-0 bg-black/20 z-0 pointer-events-none backdrop-brightness-[0.92]" />
 
-                    {/* SYSTEM TOP BAR WITH LOGO INTEGRATION */}
+                    {/* SYSTEM TOP BAR WITH LOGO REPLACING TEXT */}
                     <header class="absolute top-0 left-0 right-0 h-10 z-50 flex items-center justify-between px-5 bg-zinc-950/40 border-b border-zinc-800/20 backdrop-blur-md text-xs font-medium text-zinc-400">
                         <div class="flex items-center gap-4">
-                            {/* Embedded White Website Logo inside top-left workspace menu */}
-                            <div class="flex items-center gap-2 text-white">
-                                <OrbitIcon className="w-4.5 h-4.5" />
-                                <span class="font-semibold tracking-tight">orionOS</span>
+                            {/* SVG Logo component used exclusively as the top website branding */}
+                            <div class="flex items-center text-white cursor-pointer hover:opacity-80 transition-opacity">
+                                <OrbitIcon className="w-5 h-5" />
                             </div>
                             <span class="text-zinc-800">|</span>
                             <span class="hover:text-zinc-200 cursor-pointer transition-colors">File</span>
@@ -382,7 +381,7 @@
                                                                                 <span class="text-[9px] text-zinc-500 font-mono block mt-0.5 truncate">{wp.file}</span>
                                                                                 {isCurrent && (
                                                                                     <span class="absolute top-2 right-2 text-[9px] bg-cyan-950 border border-cyan-800 text-cyan-400 font-medium px-1.5 py-0.5 rounded">Active</span>
-                                                                                )}
+                                                                              )}
                                                                             </button>
                                                                         );
                                                                     })}
