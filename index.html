@@ -20,21 +20,20 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // Minimalistic Desktop Icons
+        // Fixed sizes for Tailwind v4 compatibility (changed w-5.5 to w-6)
         const HubIcon = () => (
-            <svg class="w-5.5 h-5.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
+            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
         );
         const MediaIcon = () => (
-            <svg class="w-5.5 h-5.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m10 9 5 3-5 3V9z"/></svg>
+            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m10 9 5 3-5 3V9z"/></svg>
         );
         const StorageIcon = () => (
-            <svg class="w-5.5 h-5.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
         );
         const PowerIcon = () => (
             <svg class="w-4 h-4 text-zinc-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77 0"/></svg>
         );
 
-        // Fully White Custom Logo Component
         const OrbitIcon = ({ className = "w-6 h-6" }) => (
             <svg 
                 class={`${className} text-white transition-colors drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] group-hover:text-cyan-400 group-hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]`} 
@@ -49,7 +48,6 @@
             </svg>
         );
 
-        // --- NEW COMPONENT: SNOWFALL LAYER ---
         function SnowOverlay() {
             const canvasRef = React.useRef(null);
 
@@ -71,9 +69,9 @@
                     flakes.push({
                         x: Math.random() * window.innerWidth,
                         y: Math.random() * window.innerHeight,
-                        r: Math.random() * 2.5 + 1, // Flake sizes
-                        speedY: Math.random() * 1 + 0.4, // Downward speed
-                        drift: Math.random() * 0.6 - 0.3 // Side-to-side drift
+                        r: Math.random() * 2.5 + 1,
+                        speedY: Math.random() * 1 + 0.4,
+                        drift: Math.random() * 0.6 - 0.3
                     });
                 }
 
@@ -91,7 +89,6 @@
                         f.y += f.speedY;
                         f.x += f.drift;
 
-                        // Reset flake back to the top once it drops off-screen
                         if (f.y > canvas.height || f.x > canvas.width || f.x < 0) {
                             flakes[i] = {
                                 x: Math.random() * canvas.width,
@@ -122,7 +119,6 @@
             );
         }
 
-        // Draggable Component Window Wrapper
         function Draggable({ children, pos, setPos, handleClass, disabled }) {
             const draggingRef = React.useRef(false);
             const relRef = React.useRef({ x: 0, y: 0 });
@@ -276,24 +272,27 @@
 
             const handleWindowMinimize = () => {
                 if (isAnimating) return;
-                if (isMaximized) {
-                    setIsMaximized(false);
-                } else {
-                    setIsAnimating(true);
-                    setIsVisible(false);
-                    setTimeout(() => setIsAnimating(false), 300);
-                }
+                setIsAnimating(true);
+                setIsVisible(false);
+                setTimeout(() => setIsAnimating(false), 300);
             };
 
             const handleAppClick = (appId, explicitTab = null) => {
                 if (isAnimating) return;
                 if (explicitTab) setHubTab(explicitTab);
 
-                if (activeWindow === appId) {
+                // If clicking the shortcut while window is active and open -> minimize it
+                if (activeWindow === appId && isVisible) {
                     setIsAnimating(true);
-                    setIsVisible(!isVisible);
+                    setIsVisible(false);
+                    setTimeout(() => setIsAnimating(false), 300);
+                } else if (activeWindow === appId && !isVisible) {
+                    // If it was minimized, bring it back up!
+                    setIsAnimating(true);
+                    setIsVisible(true);
                     setTimeout(() => setIsAnimating(false), 300);
                 } else {
+                    // Switching to a totally different app
                     setIsAnimating(true);
                     if (isVisible) {
                         setIsVisible(false);
@@ -335,7 +334,7 @@
                             />
                         )}
 
-                        {/* HOOKED ACTIVE SNOW OVERLAY GENERATOR */}
+                        {/* SNOW OVERLAY */}
                         <SnowOverlay />
                     </div>
 
@@ -358,7 +357,24 @@
                         </div>
                     </header>
 
-                    {/* DESKTOP Workspace */}
+                    {/* START MENU MENU (DROPDOWN FROM ORBIT ICON) */}
+                    {isStartOpen && (
+                        <div class="absolute top-11 left-4 w-48 bg-zinc-950/90 border border-zinc-800 backdrop-blur-xl rounded-xl p-2 z-50 shadow-2xl flex flex-col gap-0.5">
+                            <div class="text-[9px] font-bold text-zinc-500 px-3 py-1 uppercase tracking-wider">Applications</div>
+                            {apps.map(app => (
+                                <button 
+                                    key={app.id}
+                                    onClick={() => handleAppClick(app.id)}
+                                    class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-2 transition-colors cursor-pointer"
+                                >
+                                    <div class="scale-75 text-zinc-400"><app.icon /></div>
+                                    {app.label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* DESKTOP WORKSPACE */}
                     <main class="relative w-full h-full z-10" onClick={() => setIsStartOpen(false)}>
                         
                         {/* SHORTCUTS */}
@@ -398,7 +414,7 @@
                                         }
                                         class={`bg-zinc-950/92 border border-zinc-800/80 backdrop-blur-xl rounded-xl shadow-2xl flex flex-col overflow-hidden ease-in-out origin-center
                                             transition-[opacity,transform,blur,width,height,left,top,position] duration-300
-                                            ${isVisible ? 'opacity-100 scale-100 blur-none' : 'opacity-0 scale-95 blur-sm'}`}
+                                            ${isVisible ? 'opacity-100 scale-100 blur-none' : 'opacity-0 scale-95 blur-sm pointer-events-none'}`}
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         {/* Frame Drag bar */}
@@ -492,9 +508,9 @@
                                                             <div class="space-y-4">
                                                                 <h3 class="text-sm font-bold text-white">System Architectures</h3>
                                                                 <div class="space-y-2 text-xs text-zinc-400">
-                                                                    <div class="flex justify-between py-1.5 border-b border-zinc-900"><span>Build Patch Version</span><span class="font-mono text-zinc-300">v2.4.5-STABLE</span></div>
-                                                                    <div class="flex justify-between py-1.5 border-b border-zinc-900"><span>Media Renderer Pipeline</span><span class="text-zinc-300">HTML5 Hybrid Dynamic Frame Deck</span></div>
-                                                                    <div class="flex justify-between py-1.5 border-b border-zinc-900"><span>Repository Link Origin</span><span class="font-mono text-cyan-400">orbits-os/os/wallpapers/</span></div>
+                                                                    <p>OS Name: orbitOS Desktop</p>
+                                                                    <p>Kernel Node: React Hooks Engine</p>
+                                                                    <p>Style Compiler: TailwindCSS CSS Layer v4</p>
                                                                 </div>
                                                             </div>
                                                         )}
@@ -502,28 +518,11 @@
                                                 </div>
                                             )}
 
+                                            {/* STORAGE EXPLORER */}
                                             {activeWindow === 'files' && (
-                                                <div class="p-6 space-y-6">
-                                                    <div>
-                                                        <h3 class="text-sm font-bold text-white flex items-center gap-1.5">
-                                                            <svg class="w-4 h-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
-                                                            GitHub Core Filesystem / wallpapers /
-                                                        </h3>
-                                                        <p class="text-[11px] text-zinc-400 mt-0.5">Detected repository assets. Select an item inside the Hub configuration workspace to deploy.</p>
-                                                    </div>
-                                                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                                        {githubWallpapers.map((file) => (
-                                                            <div key={file.id} class="p-4 bg-zinc-900/20 border border-zinc-800/60 rounded-xl flex items-center gap-3">
-                                                                <div class="p-2 bg-zinc-950 rounded-lg text-zinc-400">
-                                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg>
-                                                                </div>
-                                                                <div class="truncate">
-                                                                    <span class="text-xs font-medium text-zinc-200 block truncate">{file.name}</span>
-                                                                    <span class="text-[9px] text-zinc-500 font-mono block mt-0.5 truncate">{file.file}</span>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                                <div class="p-6">
+                                                    <h3 class="text-sm font-bold text-white mb-2">Storage File Layer</h3>
+                                                    <p class="text-xs text-zinc-400 font-mono">No physical volumes linked to client sandbox layer.</p>
                                                 </div>
                                             )}
                                         </div>
@@ -531,22 +530,40 @@
                                 </Draggable>
                             </div>
                         )}
-
-                        {/* START MENU DIALOG */}
-                        {isStartOpen && (
-                            <div class="absolute top-12 left-4 w-64 bg-zinc-950/95 border border-zinc-800/60 shadow-2xl rounded-xl p-2 z-50 backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200" onClick={(e) => e.stopPropagation()}>
-                                <div class="px-3 py-2 border-b border-zinc-900 mb-1">
-                                    <div class="text-xs font-semibold text-white">orbitOS Core</div>
-                                    <div class="text-[10px] text-zinc-500 font-mono mt-0.5">System Ready</div>
-                                </div>
-                                <button onClick={() => handleAppClick('hub', 'dashboard')} class="w-full flex items-center gap-3 px-3 py-2 text-xs text-zinc-300 hover:text-white hover:bg-zinc-900 rounded-lg text-left transition-colors cursor-pointer"><HubIcon /> System Hub Dashboard</button>
-                                <button onClick={() => handleAppClick('hub', 'wallpaper')} class="w-full flex items-center gap-3 px-3 py-2 text-xs text-zinc-300 hover:text-white hover:bg-zinc-900 rounded-lg text-left transition-colors cursor-pointer"><MediaIcon /> Wallpaper Settings</button>
-                                <button onClick={() => handleAppClick('files')} class="w-full flex items-center gap-3 px-3 py-2 text-xs text-zinc-300 hover:text-white hover:bg-zinc-900 rounded-lg text-left transition-colors cursor-pointer"><StorageIcon /> Storage Filesystem</button>
-                                <div class="h-px bg-zinc-900 my-1" />
-                                <button onClick={() => window.location.reload()} class="w-full flex items-center gap-3 px-3 py-2 text-xs text-rose-400 hover:bg-rose-950/20 rounded-lg text-left transition-colors cursor-pointer"><PowerIcon /> Restart Environment</button>
-                            </div>
-                        )}
                     </main>
+
+                    {/* --- THE BRAND NEW ADDED TASKBAR LAYER --- */}
+                    <footer class="absolute bottom-4 left-1/2 -translate-x-1/2 h-14 z-50 flex items-center gap-2 px-4 bg-zinc-950/40 border border-zinc-800/40 backdrop-blur-xl rounded-2xl shadow-2xl transition-all max-w-xl">
+                        {apps.map((app) => {
+                            const AppIcon = app.icon;
+                            const isRunning = activeWindow === app.id;
+                            const isCurrentlyVisible = isRunning && isVisible;
+
+                            return (
+                                <button
+                                    key={app.id}
+                                    onClick={() => handleAppClick(app.id)}
+                                    class={`w-10 h-10 rounded-xl flex items-center justify-center transition-all border relative cursor-pointer group
+                                        ${isCurrentlyVisible 
+                                            ? 'bg-zinc-800/60 border-zinc-700 text-white shadow-md' 
+                                            : isRunning 
+                                                ? 'bg-zinc-900/30 border-zinc-800/60 text-zinc-400' 
+                                                : 'bg-transparent border-transparent text-zinc-500 hover:text-zinc-200 hover:bg-white/5'
+                                        }`}
+                                    title={app.label}
+                                >
+                                    <div class="transition-transform group-hover:scale-105">
+                                        <AppIcon />
+                                    </div>
+
+                                    {/* Taskbar Active Indicators */}
+                                    {isRunning && (
+                                        <span class={`absolute bottom-1 w-1 h-1 rounded-full transition-all duration-300 ${isCurrentlyVisible ? 'bg-cyan-400 w-2' : 'bg-zinc-600'}`} />
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </footer>
                 </div>
             );
         }
